@@ -9,31 +9,23 @@ class OrderModel extends Model
     protected $table = 'orders';
     protected $primaryKey = 'id';
     protected $allowedFields = ['user_id', 'total_amount', 'status', 'shipping_address'];
-
-    // NONAKTIFKAN TIMESTAMPS - INI PENYEBAB ERROR
-    protected $useTimestamps = false;  // Ubah dari true ke false
-
-    // Hapus atau comment baris ini:
-    // protected $createdField = 'created_at';
-    // protected $updatedField = 'updated_at';
+    protected $useTimestamps = false;
 
     public function createOrder($userId, $totalAmount, $shippingAddress, $cartItems)
     {
         $this->db->transStart();
 
-        // Insert order
         $orderData = [
             'user_id' => $userId,
             'total_amount' => $totalAmount,
             'status' => 'pending',
             'shipping_address' => $shippingAddress,
-            'created_at' => date('Y-m-d H:i:s')  // Tambahkan manual
+            'created_at' => date('Y-m-d H:i:s')
         ];
 
         $this->insert($orderData);
-        $orderId = $this->getInsertID();  // Gunakan getInsertID() bukan insert()
+        $orderId = $this->getInsertID();
 
-        // Insert order items
         $orderItemModel = new OrderItemModel();
         foreach ($cartItems as $item) {
             $orderItemModel->insert([
@@ -43,7 +35,6 @@ class OrderModel extends Model
                 'price' => $item['price']
             ]);
 
-            // Update stock
             $productModel = new ProductModel();
             $product = $productModel->find($item['id']);
             if ($product) {
@@ -66,6 +57,45 @@ class OrderModel extends Model
     {
         return $this->where('user_id', $userId)
             ->orderBy('created_at', 'DESC')
+            ->findAll();
+    }
+
+    // ===== METHOD UNTUK DASHBOARD =====
+
+    public function getAllOrdersWithCustomer()
+    {
+        return $this->select('orders.*, users.name as customer_name, users.email as customer_email')
+            ->join('users', 'users.id = orders.user_id', 'left')
+            ->orderBy('orders.created_at', 'DESC')
+            ->findAll();
+    }
+
+    public function getTotalRevenue()
+    {
+        $result = $this->select('SUM(total_amount) as total')
+            ->whereNotIn('status', ['cancelled'])
+            ->first();
+
+        return $result['total'] ?? 0;
+    }
+
+    public function getOrderStatistics()
+    {
+        return [
+            'pending' => $this->where('status', 'pending')->countAllResults(),
+            'processing' => $this->where('status', 'processing')->countAllResults(),
+            'shipped' => $this->where('status', 'shipped')->countAllResults(),
+            'delivered' => $this->where('status', 'delivered')->countAllResults(),
+            'cancelled' => $this->where('status', 'cancelled')->countAllResults(),
+        ];
+    }
+
+    public function getRecentOrders($limit = 10)
+    {
+        return $this->select('orders.*, users.name as customer_name, users.email as customer_email')
+            ->join('users', 'users.id = orders.user_id', 'left')
+            ->orderBy('orders.created_at', 'DESC')
+            ->limit($limit)
             ->findAll();
     }
 }

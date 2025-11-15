@@ -74,7 +74,7 @@
                     </div>
                     <div class="text-end mt-3">
                         <a href="<?= base_url('cart/clear') ?>"
-                            class="btn bg-danger btn-outline-danger"
+                            class="btn bg-outline-danger btn-danger"
                             onclick="return confirm('Clear all items from cart?')">
                             <i class="bi bi-trash"></i> Kosongkan Keranjang
                         </a>

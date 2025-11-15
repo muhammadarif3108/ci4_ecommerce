@@ -9,8 +9,6 @@ class CategoryModel extends Model
     protected $table = 'categories';
     protected $primaryKey = 'id';
     protected $allowedFields = ['name', 'description'];
-
-    // NONAKTIFKAN TIMESTAMPS
     protected $useTimestamps = false;
 
     public function getCategories()
@@ -26,5 +24,14 @@ class CategoryModel extends Model
             ->where('products.category_id', $categoryId)
             ->where('products.stock >', 0)
             ->get()->getResultArray();
+    }
+
+    // Tambahan: Count products per category
+    public function getCategoryWithProductCount()
+    {
+        return $this->select('categories.*, COUNT(products.id) as product_count')
+            ->join('products', 'products.category_id = categories.id', 'left')
+            ->groupBy('categories.id')
+            ->findAll();
     }
 }

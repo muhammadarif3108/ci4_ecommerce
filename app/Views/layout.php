@@ -60,6 +60,7 @@
             height: 100%;
             margin: 0;
             padding: 0;
+            padding-top: 3rem;
         }
 
         body {
@@ -579,14 +580,33 @@
         /* ========================================
         PRODUCT DETAIL PAGE
         ======================================== */
-        .product-detail-image {
-            background-color: #f8f9fa;
+        .product-image-wrapper {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 0.75rem;
+            padding: 1.5rem;
             border: 1px solid var(--border-color);
-            object-fit: cover;
-            width: 100%;
-            max-height: 600px;
             box-shadow: var(--shadow-md);
+            overflow: hidden;
+            width: 100%;
+            height: 0;
+            padding-bottom: 100%;
+            /* Creates 1:1 ratio */
+            position: relative;
+        }
+
+        .product-detail-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            padding: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .product-detail-image:hover {
+            transform: scale(1.05);
         }
 
         .product-info h2 {
