@@ -22,7 +22,7 @@
                         <div class="card-body">
                             <i class="bi bi-grid-3x3-gap fs-1 mb-2"></i>
                             <h5 class="card-title mt-2"><?= esc($category['name']) ?></h5>
-                            <p class="card-text text-muted"><?= esc($category['description']) ?></p>
+                            <p class="card-text text-muted small"><?= esc($category['description']) ?></p>
                         </div>
                     </div>
                 </a>
@@ -36,14 +36,13 @@
     <h2 class="mb-4">Produk Unggulan</h2>
     <div class="row g-4">
         <?php foreach ($products as $product):
-            // Tidak perlu random lagi, ambil dari database
             $sold = $product['sold'] ?? 0;
             $rating = $product['rating'] ?? 0.0;
             $reviewCount = $product['review_count'] ?? 0;
         ?>
-            <div class="col-md-3">
+            <div class="col-lg-3 col-md-4 col-sm-6">
                 <div class="card product-card h-100">
-                    <!-- Badge Terlaris (jika terjual > 100) -->
+                    <!-- Badge Terlaris -->
                     <?php if ($sold > 100): ?>
                         <div class="position-absolute top-0 end-0 m-2" style="z-index: 1;">
                             <span class="badge bg-danger">
@@ -55,53 +54,69 @@
                     <img src="<?= base_url('uploads/' . ($product['image'] ?? 'placeholder.jpg')) ?>"
                         class="card-img-top product-image"
                         alt="<?= esc($product['name']) ?>">
-                    <div class="card-body d-flex flex-column">
-                        <span class="badge bg-secondary mb-2 align-self-start"><?= esc($product['category_name']) ?></span>
-                        <h5 class="card-title"><?= esc($product['name']) ?></h5>
-                        <p class="card-text text-muted small"><?= substr(esc($product['description']), 0, 60) ?>...</p>
 
-                        <!-- Rating & Sold Count -->
-                        <div class="mb-2">
-                            <div class="d-flex align-items-center mb-1">
-                                <div class="text-warning me-1" style="font-size: 0.85rem;">
+                    <div class="card-body d-flex flex-column p-3">
+                        <span class="badge bg-secondary mb-2 align-self-start"><?= esc($product['category_name']) ?></span>
+
+                        <!-- Product Title - Fixed Height -->
+                        <h5 class="card-title product-title"><?= esc($product['name']) ?></h5>
+
+                        <!-- Rating & Sold Count - FIXED POSITION -->
+                        <div class="product-stats mb-3">
+                            <!-- Rating dengan bintang -->
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="text-warning me-2" style="font-size: 0.9rem; letter-spacing: 2px;">
                                     <?php
                                     $fullStars = floor($rating);
                                     $hasHalfStar = ($rating - $fullStars) >= 0.5;
 
-                                    // Bintang penuh
                                     for ($i = 0; $i < $fullStars; $i++): ?>
                                         <i class="bi bi-star-fill"></i>
                                     <?php endfor; ?>
 
-                                    <!-- Bintang setengah -->
                                     <?php if ($hasHalfStar): ?>
                                         <i class="bi bi-star-half"></i>
                                     <?php endif; ?>
 
-                                    <!-- Bintang kosong -->
                                     <?php for ($i = 0; $i < (5 - ceil($rating)); $i++): ?>
                                         <i class="bi bi-star"></i>
                                     <?php endfor; ?>
                                 </div>
-                                <span class="small text-muted"><?= number_format($rating, 1) ?></span>
+                                <span class="fw-bold text-dark" style="font-size: 0.9rem;">
+                                    <?= number_format($rating, 1) ?>
+                                </span>
                             </div>
-                            <small class="text-muted">
-                                <i class="bi bi-chat-dots"></i> <?= $reviewCount ?> ulasan |
-                                <i class="bi bi-bag-check"></i> <?= $sold ?> terjual
-                            </small>
+
+                            <!-- Ulasan dan Terjual -->
+                            <div class="d-flex align-items-center" style="font-size: 0.85rem;">
+                                <span class="text-muted me-3">
+                                    <i class="bi bi-chat-dots me-1"></i><?= $reviewCount ?> ulasan
+                                </span>
+                                <span class="text-muted">
+                                    <i class="bi bi-bag-check me-1"></i><?= $sold ?> terjual
+                                </span>
+                            </div>
                         </div>
 
+                        <!-- Price and Stock - FIXED AT BOTTOM -->
                         <div class="mt-auto">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h4 class="mb-0">Rp <?= number_format($product['price'], 0, ',', '.') ?></h4>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h4 class="text-primary mb-0 fw-bold">
+                                    Rp <?= number_format($product['price'], 0, ',', '.') ?>
+                                </h4>
                                 <?php if ($product['stock'] > 0): ?>
-                                    <span class="badge bg-success">Stock: <?= $product['stock'] ?></span>
+                                    <span class="badge bg-success-subtle text-success px-3 py-2">
+                                        <i class="bi bi-check-circle"></i> Stok: <?= $product['stock'] ?>
+                                    </span>
                                 <?php else: ?>
-                                    <span class="badge bg-danger">Habis</span>
+                                    <span class="badge bg-danger px-3 py-2">Habis</span>
                                 <?php endif; ?>
                             </div>
+
+                            <!-- Action Buttons -->
                             <div class="d-grid gap-2">
-                                <a href="<?= base_url('product/' . $product['id']) ?>" class="btn btn-outline-primary btn-sm">
+                                <a href="<?= base_url('product/' . $product['id']) ?>"
+                                    class="btn btn-outline-primary btn-sm">
                                     <i class="bi bi-eye"></i> Detail Produk
                                 </a>
 
@@ -109,7 +124,7 @@
                                     <form action="<?= base_url('cart/add') ?>" method="post">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                                        <button type="submit" class="btn btn-sm w-100">
+                                        <button type="submit" class="btn btn-primary btn-sm w-100">
                                             <i class="bi bi-cart-plus"></i> Masukkan Keranjang
                                         </button>
                                     </form>
@@ -128,28 +143,28 @@
 </section>
 
 <!-- Why Choose Us -->
-<section class="why-us container text-center">
-    <h2 class="mb-5">Why Choose Us?</h2>
+<section class="why-us container text-center mb-5">
+    <h2 class="mb-5">Mengapa Memilih Kami?</h2>
     <div class="row">
         <div class="col-md-3 mb-4">
-            <i class="bi bi-truck fs-1 mb-3"></i>
+            <i class="bi bi-truck fs-1 text-primary mb-3"></i>
             <h5>Gratis Ongkir</h5>
-            <p>Untuk setiap pesanan</p>
+            <p class="text-muted">Untuk setiap pesanan</p>
         </div>
         <div class="col-md-3 mb-4">
-            <i class="bi bi-shield-check fs-1 mb-3"></i>
+            <i class="bi bi-shield-check fs-1 text-success mb-3"></i>
             <h5>Pembayaran Aman</h5>
-            <p>100% safe transactions</p>
+            <p class="text-muted">100% transaksi terjamin</p>
         </div>
         <div class="col-md-3 mb-4">
-            <i class="bi bi-arrow-repeat fs-1 mb-3"></i>
+            <i class="bi bi-arrow-repeat fs-1 text-info mb-3"></i>
             <h5>Pengembalian Mudah</h5>
-            <p>Bisa Dikembalikan dalam 30 Hari</p>
+            <p class="text-muted">Bisa dikembalikan dalam 30 hari</p>
         </div>
         <div class="col-md-3 mb-4">
-            <i class="bi bi-headset fs-1 mb-3"></i>
+            <i class="bi bi-headset fs-1 text-warning mb-3"></i>
             <h5>24/7 Support</h5>
-            <p>Layanan Pelanggan</p>
+            <p class="text-muted">Layanan pelanggan siap membantu</p>
         </div>
     </div>
 </section>
