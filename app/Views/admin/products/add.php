@@ -99,11 +99,11 @@
             </div>
             <div class="card-body">
                 <ul class="small mb-0">
-                    <li class="mb-2">Use clear and descriptive product names</li>
-                    <li class="mb-2">Add high-quality images for better conversion</li>
-                    <li class="mb-2">Write detailed descriptions including features and specifications</li>
-                    <li class="mb-2">Set competitive prices based on market research</li>
-                    <li>Keep stock levels updated to avoid overselling</li>
+                    <li class="mb-2">Gunakan nama produk yang jelas dan deskriptif</li>
+                    <li class="mb-2">Tambahkan gambar berkualitas tinggi untuk meningkatkan konversi</li>
+                    <li class="mb-2">Tulis deskripsi lengkap termasuk fitur dan spesifikasi</li>
+                    <li class="mb-2">Tetapkan harga yang kompetitif berdasarkan riset pasar</li>
+                    <li>Perbarui stok secara berkala untuk menghindari overselling</li>
                 </ul>
             </div>
         </div>
