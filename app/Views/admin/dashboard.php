@@ -53,7 +53,7 @@
                 <div class="row text-center g-3">
                     <div class="col">
                         <h3 class="text-warning mb-1"><?= $orderStats['pending'] ?></h3>
-                        <small class="text-muted">Belum Dibayar</small>
+                        <small class="text-muted">Belum Bayar</small>
                     </div>
                     <div class="col">
                         <h3 class="text-info mb-1"><?= $orderStats['processing'] ?></h3>
@@ -65,7 +65,7 @@
                     </div>
                     <div class="col">
                         <h3 class="text-success mb-1"><?= $orderStats['delivered'] ?></h3>
-                        <small class="text-muted">Terkirim</small>
+                        <small class="text-muted">Selesai</small>
                     </div>
                     <div class="col">
                         <h3 class="text-danger mb-1"><?= $orderStats['cancelled'] ?></h3>
@@ -119,10 +119,10 @@
 
                                 // Array teks status dalam bahasa Indonesia
                                 $statusText = [
-                                    'pending' => 'Belum Dibayar',
+                                    'pending' => 'Belum Bayar',
                                     'processing' => 'Dikemas',
                                     'shipped' => 'Dikirim',
-                                    'delivered' => 'Terkirim',
+                                    'delivered' => 'Selesai',
                                     'cancelled' => 'Dibatalkan'
                                 ];
 

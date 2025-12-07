@@ -91,7 +91,7 @@
                         <tfoot>
                             <tr>
                                 <td colspan="3" class="text-end"><strong>Ongkir:</strong></td>
-                                <td><strong>Rp 0</strong></td>
+                                <td><strong>Free Ongkir</strong></td>
                             </tr>
                             <tr class="table-light">
                                 <td colspan="3" class="text-end">

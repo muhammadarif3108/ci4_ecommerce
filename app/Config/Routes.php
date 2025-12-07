@@ -1,3 +1,4 @@
+<!-- app/Config/Routes.php -->
 <?php
 
 use CodeIgniter\Router\RouteCollection;
@@ -28,6 +29,13 @@ $routes->get('order/success/(:num)', 'Order::success/$1');
 $routes->get('order/success/(:num)', 'Order::success/$1');
 $routes->get('orders', 'Order::index');
 $routes->get('order/detail/(:num)', 'Order::detail/$1');
+
+// Review Routes (setelah Order Routes)
+$routes->get('review/create/(:num)/(:num)', 'Review::create/$1/$2');
+$routes->post('review/store', 'Review::store');
+$routes->get('review/edit/(:num)', 'Review::edit/$1');
+$routes->post('review/update/(:num)', 'Review::update/$1');
+$routes->post('review/delete/(:num)', 'Review::delete/$1');
 
 // Auth Routes
 $routes->get('login', 'Auth::login');

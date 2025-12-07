@@ -40,9 +40,17 @@
                                     'delivered' => 'success',
                                     'cancelled' => 'danger'
                                 ];
+                                $statusText = [
+                                    'pending' => 'Belum Bayar',
+                                    'processing' => 'Dikemas',
+                                    'shipped' => 'Dikirim',
+                                    'delivered' => 'Selesai',
+                                    'cancelled' => 'Dibatalkan'
+                                ];
                                 $color = $statusColors[$order['status']] ?? 'secondary';
+                                $text = $statusText[$order['status']] ?? ucfirst($order['status']);
                                 ?>
-                                <span class="badge bg-<?= $color ?>"><?= ucfirst($order['status']) ?></span>
+                                <span class="badge bg-<?= $color ?>"><?= $text ?></span>
                             </div>
                             <div class="col-md-3 text-end">
                                 <a href="<?= base_url('order/detail/' . $order['id']) ?>" class="btn btn-outline-primary">

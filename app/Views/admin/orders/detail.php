@@ -113,10 +113,10 @@
                     <div class="mb-3">
                         <label class="form-label">Current Status</label>
                         <select class="form-select" name="status">
-                            <option value="pending" <?= $order['status'] == 'pending' ? 'selected' : '' ?>>Belum Dibayar</option>
+                            <option value="pending" <?= $order['status'] == 'pending' ? 'selected' : '' ?>>Belum Bayar</option>
                             <option value="processing" <?= $order['status'] == 'processing' ? 'selected' : '' ?>>Dikemas</option>
                             <option value="shipped" <?= $order['status'] == 'shipped' ? 'selected' : '' ?>>Dikirim</option>
-                            <option value="delivered" <?= $order['status'] == 'delivered' ? 'selected' : '' ?>>Terkirim</option>
+                            <option value="delivered" <?= $order['status'] == 'delivered' ? 'selected' : '' ?>>Selesai</option>
                             <option value="cancelled" <?= $order['status'] == 'cancelled' ? 'selected' : '' ?>>Dibatalkan</option>
                         </select>
                     </div>

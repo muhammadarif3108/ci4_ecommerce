@@ -3,8 +3,8 @@
 <?= $this->section('content') ?>
 
 <div class="mb-4">
-    <h2><i class="bi bi-search"></i> Search Results for "<?= esc($keyword) ?>"</h2>
-    <p class="text-muted"><?= count($products) ?> product(s) found</p>
+    <h2><i class="bi bi-search"></i> Hasil Pencarian Untuk "<?= esc($keyword) ?>"</h2>
+    <p class="text-muted"><?= count($products) ?> produk ditemukan</p>
 </div>
 
 <?php if (empty($products)): ?>
@@ -12,7 +12,7 @@
         <i class="bi bi-search fs-1 d-block mb-3"></i>
         <h4>No products found</h4>
         <p>Try different keywords or browse our categories</p>
-        <a href="<?= base_url('/') ?>" class="btn btn-primary">Browse All Products</a>
+        <a href="<?= base_url('/') ?>" class="btn btn-primary">Jelajahi Semua Produk</a>
     </div>
 <?php else: ?>
     <div class="row g-4">
@@ -33,13 +33,13 @@
                             </div>
                             <div class="d-grid gap-2">
                                 <a href="<?= base_url('product/' . $product['id']) ?>" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-eye"></i> View Details
+                                    <i class="bi bi-eye"></i> Detail Produk
                                 </a>
                                 <form action="<?= base_url('cart/add') ?>" method="post">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
                                     <button type="submit" class="btn btn-primary btn-sm w-100">
-                                        <i class="bi bi-cart-plus"></i> Add to Cart
+                                        <i class="bi bi-cart-plus"></i> Masukkan Keranjang
                                     </button>
                                 </form>
                             </div>

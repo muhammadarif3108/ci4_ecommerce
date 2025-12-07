@@ -23,7 +23,6 @@
             $imagePath = $product['image'] ?? 'placeholder.jpg';
             $imageUrl = base_url('uploads/' . $imagePath);
 
-            // Cek apakah file ada
             if (empty($product['image']) || !file_exists(FCPATH . 'uploads/' . $imagePath)) {
                 $imageUrl = 'https://via.placeholder.com/500x500/00B4DB/FFFFFF?text=' . urlencode(substr($product['name'], 0, 20));
             }
@@ -41,6 +40,32 @@
         </span>
 
         <h2 class="mb-3"><?= esc($product['name']) ?></h2>
+
+        <!-- Rating Section -->
+        <?php
+        $reviewModel = new \App\Models\ReviewModel();
+        $avgRating = $reviewModel->getAverageRating($product['id']);
+        $totalReviews = $reviewModel->getTotalReviews($product['id']);
+        ?>
+        <?php if ($totalReviews > 0): ?>
+            <div class="mb-3">
+                <span class="text-warning fs-5">
+                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                        <?php if ($i <= floor($avgRating)): ?>
+                            <i class="bi bi-star-fill"></i>
+                        <?php elseif ($i - $avgRating < 1 && $i - $avgRating > 0): ?>
+                            <i class="bi bi-star-half"></i>
+                        <?php else: ?>
+                            <i class="bi bi-star"></i>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+                </span>
+                <span class="ms-2 text-muted">
+                    <?= $avgRating ?> (<?= $totalReviews ?> review<?= $totalReviews > 1 ? 's' : '' ?>)
+                </span>
+            </div>
+        <?php endif; ?>
+
         <h3 class="mb-3">Rp <?= number_format($product['price'], 0, ',', '.') ?></h3>
 
         <?php if ($product['stock'] > 0): ?>
@@ -96,6 +121,94 @@
         <?php endif; ?>
     </div>
 </div>
+
+<!-- Reviews Section -->
+<?php if ($totalReviews > 0): ?>
+    <div class="mt-5">
+        <h4 class="mb-4">
+            <i class="bi bi-star-fill me-2"></i>Review Pelanggan
+        </h4>
+
+        <!-- Rating Summary -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center border-end">
+                        <h1 class="display-4 mb-0"><?= $avgRating ?></h1>
+                        <div class="text-warning mb-2">
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <?php if ($i <= floor($avgRating)): ?>
+                                    <i class="bi bi-star-fill"></i>
+                                <?php elseif ($i - $avgRating < 1 && $i - $avgRating > 0): ?>
+                                    <i class="bi bi-star-half"></i>
+                                <?php else: ?>
+                                    <i class="bi bi-star"></i>
+                                <?php endif; ?>
+                            <?php endfor; ?>
+                        </div>
+                        <small class="text-muted"><?= $totalReviews ?> review<?= $totalReviews > 1 ? 's' : '' ?></small>
+                    </div>
+                    <div class="col-md-9">
+                        <?php
+                        $ratingStats = $reviewModel->getRatingStats($product['id']);
+                        for ($i = 5; $i >= 1; $i--):
+                            $count = $ratingStats[$i];
+                            $percentage = $totalReviews > 0 ? ($count / $totalReviews * 100) : 0;
+                        ?>
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="me-2" style="min-width: 70px;">
+                                    <?= $i ?> <i class="bi bi-star-fill text-warning"></i>
+                                </span>
+                                <div class="progress flex-grow-1" style="height: 20px;">
+                                    <div class="progress-bar bg-warning"
+                                        style="width: <?= $percentage ?>%">
+                                    </div>
+                                </div>
+                                <span class="ms-2 text-muted" style="min-width: 40px;">
+                                    <?= $count ?>
+                                </span>
+                            </div>
+                        <?php endfor; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review List -->
+        <?php
+        $reviews = $reviewModel->getProductReviews($product['id']);
+        foreach ($reviews as $review):
+        ?>
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="bi bi-person-circle me-1"></i>
+                                <?= esc($review['user_name']) ?>
+                            </h6>
+                            <div class="text-warning">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                    <?php if ($i <= $review['rating']): ?>
+                                        <i class="bi bi-star-fill"></i>
+                                    <?php else: ?>
+                                        <i class="bi bi-star"></i>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
+                            </div>
+                        </div>
+                        <small class="text-muted">
+                            <?= date('d M Y', strtotime($review['created_at'])) ?>
+                        </small>
+                    </div>
+                    <?php if (!empty($review['comment'])): ?>
+                        <p class="mb-0 text-muted"><?= nl2br(esc($review['comment'])) ?></p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
 
 <!-- Related Products -->
 <?php if (!empty($related_products)): ?>

@@ -59,10 +59,10 @@
                                     
                                     // Array teks status dalam bahasa Indonesia
                                     $statusText = [
-                                        'pending' => 'Menunggu Konfirmasi',
+                                        'pending' => 'Belum Bayar',
                                         'processing' => 'Dikemas',
                                         'shipped' => 'Dikirim',
-                                        'delivered' => 'Terkirim',
+                                        'delivered' => 'Selesai',
                                         'cancelled' => 'Dibatalkan'
                                     ];
                                     

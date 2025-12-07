@@ -913,7 +913,7 @@
             <div class="row gy-4">
                 <div class="col-md-4">
                     <h5><i class="bi bi-shop"></i> iTechStore</h5>
-                    <p>Your trusted online tech destination — where innovation meets convenience.</p>
+                    <p>iPhone, Mac, TV, aksesori komputer, gadget, dan perangkat smarthome berkualitas. Produk asli, layanan aman, pengalaman belanja tanpa ribet.</p>
                 </div>
                 <div class="col-md-4">
                     <h5>Tautan Utama</h5>

@@ -98,4 +98,21 @@ class OrderModel extends Model
             ->limit($limit)
             ->findAll();
     }
+
+    // Di OrderModel.php, tambahkan method ini
+    public function updateProductSold($orderId)
+    {
+        $orderItemModel = new OrderItemModel();
+        $items = $orderItemModel->where('order_id', $orderId)->findAll();
+
+        $productModel = new ProductModel();
+        foreach ($items as $item) {
+            $product = $productModel->find($item['product_id']);
+            if ($product) {
+                $productModel->update($item['product_id'], [
+                    'sold' => $product['sold'] + $item['quantity']
+                ]);
+            }
+        }
+    }
 }

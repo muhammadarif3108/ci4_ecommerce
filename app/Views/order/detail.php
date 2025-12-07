@@ -2,125 +2,153 @@
 
 <?= $this->section('content') ?>
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="bi bi-receipt"></i> Order #<?= $order['id'] ?></h2>
-    <a href="<?= base_url('orders') ?>" class="btn btn-secondary">
-        <i class="bi bi-arrow-left"></i> Kembali
-    </a>
-</div>
+<div class="container my-5">
+    <h2 class="mb-4">
+        <i class="bi bi-receipt me-2"></i>Detail Pesanan #<?= $order['id'] ?>
+    </h2>
 
-<div class="row g-4">
-    <div class="col-md-8">
-        <!-- Order Items -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="bi bi-box-seam"></i> Item Pesanan</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Produk</th>
-                                <th>Harga</th>
-                                <th>Jumlah</th>
-                                <th>Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($orderItems as $item): ?>
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <img src="<?= base_url('uploads/' . ($item['image'] ?? 'placeholder.jpg')) ?>"
-                                                alt="<?= esc($item['product_name']) ?>"
-                                                class="img-thumbnail me-3"
-                                                style="width: 60px; height: 60px; object-fit: cover;">
-                                            <div>
-                                                <h6 class="mb-0"><?= esc($item['product_name']) ?></h6>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="align-middle">Rp <?= number_format($item['price'], 0, ',', '.') ?></td>
-                                    <td class="align-middle"><?= $item['quantity'] ?></td>
-                                    <td class="align-middle">
-                                        <strong>Rp <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?></strong>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="3" class="text-end"><strong>Ongkir:</strong></td>
-                                <td><strong>Rp 0</strong></td>
-                            </tr>
-                            <tr class="table-light">
-                                <td colspan="3" class="text-end">
-                                    <h5 class="mb-0">Total:</h5>
-                                </td>
-                                <td>
-                                    <h5 class="mb-0 text-primary">Rp <?= number_format($order['total_amount'], 0, ',', '.') ?></h5>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success alert-dismissible fade show">
+            <?= session()->getFlashdata('success') ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
+    <?php endif; ?>
 
-        <!-- Shipping Address -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Alamat Pengiriman</h5>
-            </div>
-            <div class="card-body">
-                <p class="mb-0"><?= nl2br(esc($order['shipping_address'])) ?></p>
-            </div>
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger alert-dismissible fade show">
+            <?= session()->getFlashdata('error') ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-    </div>
+    <?php endif; ?>
 
-    <div class="col-md-4">
-        <!-- Order Info -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white">
-                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informasi Pesanan</h5>
+    <div class="row">
+        <!-- Informasi Order -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Informasi Pesanan</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Status:</strong>
+                            <?php
+                            $statusClass = [
+                                'pending' => 'warning',
+                                'processing' => 'primary',
+                                'shipped' => 'info',
+                                'delivered' => 'success',
+                                'cancelled' => 'danger'
+                            ];
+                            $statusText = [
+                                'pending' => 'Belum Bayar',
+                                'processing' => 'Dikemas',
+                                'shipped' => 'Dikirim',
+                                'delivered' => 'Selesai',
+                                'cancelled' => 'Dibatalkan'
+                            ];
+                            ?>
+                            <span class="badge bg-<?= $statusClass[$order['status']] ?> ms-2">
+                                <?= $statusText[$order['status']] ?>
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Tanggal Pesan:</strong>
+                            <?= date('d M Y H:i', strtotime($order['created_at'])) ?>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>Alamat Pengiriman:</strong>
+                            <p class="mb-0"><?= nl2br(esc($order['shipping_address'])) ?></p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <small class="text-muted">Order ID</small>
-                    <p class="mb-0"><strong>#<?= $order['id'] ?></strong></p>
+
+            <!-- Item Produk -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Produk yang Dipesan</h5>
                 </div>
-                <div class="mb-3">
-                    <small class="text-muted">Order Date</small>
-                    <p class="mb-0"><?= date('d F Y, H:i', strtotime($order['created_at'])) ?></p>
-                </div>
-                <div class="mb-3">
-                    <small class="text-muted">Status</small><br>
+                <div class="card-body">
                     <?php
-                    $statusColors = [
-                        'pending' => 'warning',
-                        'processing' => 'info',
-                        'shipped' => 'primary',
-                        'delivered' => 'success',
-                        'cancelled' => 'danger'
-                    ];
-                    $color = $statusColors[$order['status']] ?? 'secondary';
+                    // Load review model untuk cek review
+                    $reviewModel = new \App\Models\ReviewModel();
                     ?>
-                    <span class="badge bg-<?= $color ?> mt-1"><?= ucfirst($order['status']) ?></span>
-                </div>
-                <div>
-                    <small class="text-muted">Customer Name</small>
-                    <p class="mb-0"><?= esc($order['customer_name']) ?></p>
+                    <?php foreach ($orderItems as $item): ?>
+                        <div class="row align-items-center mb-3 pb-3 border-bottom">
+                            <div class="col-md-2">
+                                <?php
+                                $imagePath = $item['image'] ?? 'placeholder.jpg';
+                                $imageUrl = base_url('uploads/' . $imagePath);
+                                if (empty($item['image']) || !file_exists(FCPATH . 'uploads/' . $imagePath)) {
+                                    $imageUrl = 'https://via.placeholder.com/100x100/00B4DB/FFFFFF?text=Product';
+                                }
+                                ?>
+                                <img src="<?= $imageUrl ?>"
+                                    class="img-fluid rounded"
+                                    alt="<?= esc($item['product_name']) ?>">
+                            </div>
+                            <div class="col-md-4">
+                                <h6><?= esc($item['product_name']) ?></h6>
+                                <small class="text-muted">
+                                    Rp <?= number_format($item['price'], 0, ',', '.') ?> x <?= $item['quantity'] ?>
+                                </small>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <strong>Rp <?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?></strong>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <?php if ($order['status'] == 'delivered'): ?>
+                                    <?php
+                                    $hasReviewed = $reviewModel->hasReviewed(
+                                        $item['product_id'],
+                                        session()->get('user_id'),
+                                        $order['id']
+                                    );
+                                    ?>
+                                    <?php if ($hasReviewed): ?>
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle me-1"></i>Sudah direview
+                                        </span>
+                                    <?php else: ?>
+                                        <a href="<?= base_url('review/create/' . $order['id'] . '/' . $item['product_id']) ?>"
+                                            class="btn btn-sm btn-outline-warning">
+                                            <i class="bi bi-star me-1"></i>Beri Review
+                                        </a>
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
 
-        <!-- Track Order -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="bi bi-truck fs-1 text-primary mb-3"></i>
-                <h6>Cek Status Pesanan</h6>
-                <p class="text-muted small">Pesanan Anda Sedang Diproses</p>
+        <!-- Ringkasan Pembayaran -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Ringkasan Pembayaran</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <strong>Rp <?= number_format($order['total_amount'], 0, ',', '.') ?></strong>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total:</strong>
+                        <strong class="text-primary fs-5">
+                            Rp <?= number_format($order['total_amount'], 0, ',', '.') ?>
+                        </strong>
+                    </div>
+
+                    <a href="<?= base_url('orders') ?>" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-arrow-left me-1"></i>Kembali ke Daftar Pesanan
+                    </a>
+                </div>
             </div>
         </div>
     </div>
