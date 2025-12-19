@@ -42,6 +42,7 @@ $routes->post('review/store', 'Review::store');
 $routes->get('review/edit/(:num)', 'Review::edit/$1');
 $routes->post('review/update/(:num)', 'Review::update/$1');
 $routes->post('review/delete/(:num)', 'Review::delete/$1');
+$routes->post('review/delete-image/(:num)/(:num)', 'Review::deleteImage/$1/$2'); // NEW
 
 // Auth Routes
 $routes->get('login', 'Auth::login');

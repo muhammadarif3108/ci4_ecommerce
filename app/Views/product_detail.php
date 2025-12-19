@@ -201,8 +201,33 @@
                             <?= date('d M Y', strtotime($review['created_at'])) ?>
                         </small>
                     </div>
+                    
                     <?php if (!empty($review['comment'])): ?>
-                        <p class="mb-0 text-muted"><?= nl2br(esc($review['comment'])) ?></p>
+                        <p class="mb-3 text-muted"><?= nl2br(esc($review['comment'])) ?></p>
+                    <?php endif; ?>
+
+                    <!-- Review Images -->
+                    <?php if (!empty($review['review_images'])): ?>
+                        <?php
+                        $reviewImages = json_decode($review['review_images'], true);
+                        if (is_array($reviewImages) && count($reviewImages) > 0):
+                        ?>
+                            <div class="review-images-grid mb-2">
+                                <?php foreach ($reviewImages as $index => $image): ?>
+                                    <?php
+                                    $imagePath = FCPATH . 'uploads/reviews/' . $image;
+                                    if (file_exists($imagePath)):
+                                    ?>
+                                        <div class="review-image-item">
+                                            <img src="<?= base_url('uploads/reviews/' . $image) ?>" 
+                                                alt="Review Image <?= $index + 1 ?>"
+                                                class="review-image-thumb"
+                                                onclick="openImageModal('<?= base_url('uploads/reviews/' . $image) ?>')">
+                                        </div>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>
@@ -253,5 +278,61 @@
         <p class="fst-italic">Tidak ada produk terkait tersedia.</p>
     </div>
 <?php endif; ?>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center p-0">
+                <img id="modalImage" src="" class="img-fluid" alt="Review Image">
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.review-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+}
+
+.review-image-item {
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.review-image-item:hover {
+    border-color: var(--accent-color);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 180, 219, 0.3);
+}
+
+.review-image-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+#imageModal .modal-body img {
+    max-height: 80vh;
+    object-fit: contain;
+}
+</style>
+
+<script>
+function openImageModal(imageSrc) {
+    document.getElementById('modalImage').src = imageSrc;
+    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    modal.show();
+}
+</script>
 
 <?= $this->endSection() ?>

@@ -22,7 +22,6 @@ class Review extends BaseController
     // Tampilkan form review
     public function create($orderId, $productId)
     {
-        // Cek login
         if (!session()->get('user_id')) {
             return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu');
         }
@@ -106,22 +105,75 @@ class Review extends BaseController
                 ->with('error', 'Anda sudah memberikan review untuk produk ini');
         }
 
+        // Handle upload multiple images (max 5 images)
+        $uploadedImages = [];
+        $files = $this->request->getFileMultiple('review_images');
+
+        if ($files && count($files) > 0) {
+            $uploadPath = ROOTPATH . 'public/uploads/reviews';
+
+            // Buat folder jika belum ada
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+
+            $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            $maxSize = 2048; // 2MB per image
+            $maxImages = 5;
+
+            $validFiles = array_filter($files, function ($file) {
+                return $file->isValid() && !$file->hasMoved();
+            });
+
+            if (count($validFiles) > $maxImages) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Maksimal upload 5 gambar');
+            }
+
+            foreach ($validFiles as $file) {
+                // Validasi tipe file
+                if (!in_array($file->getMimeType(), $allowedTypes)) {
+                    continue;
+                }
+
+                // Validasi ukuran file
+                if ($file->getSize() > ($maxSize * 1024)) {
+                    continue;
+                }
+
+                // Generate nama file unik
+                $newName = 'review_' . uniqid() . '_' . time() . '.' . $file->getExtension();
+
+                // Move file
+                if ($file->move($uploadPath, $newName)) {
+                    $uploadedImages[] = $newName;
+                }
+            }
+        }
+
         // Simpan review
         $data = [
             'product_id' => $productId,
             'user_id' => $userId,
             'order_id' => $orderId,
             'rating' => $this->request->getPost('rating'),
-            'comment' => $this->request->getPost('comment')
+            'comment' => $this->request->getPost('comment'),
+            'review_images' => !empty($uploadedImages) ? json_encode($uploadedImages) : null
         ];
 
         if ($this->reviewModel->insert($data)) {
-            // HAPUS auto-update rating untuk menghindari error
-            // Data rating akan dihitung real-time di Home controller
-
             return redirect()->to('/order/detail/' . $orderId)
                 ->with('success', 'Terima kasih! Review Anda telah disimpan');
         } else {
+            // Hapus gambar jika gagal simpan
+            foreach ($uploadedImages as $image) {
+                $imagePath = ROOTPATH . 'public/uploads/reviews/' . $image;
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
+
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Gagal menyimpan review');
@@ -182,15 +234,59 @@ class Review extends BaseController
                 ->with('errors', $this->validator->getErrors());
         }
 
+        // Handle upload new images
+        $existingImages = !empty($review['review_images']) ? json_decode($review['review_images'], true) : [];
+        $uploadedImages = $existingImages;
+
+        $files = $this->request->getFileMultiple('review_images');
+
+        if ($files && count($files) > 0) {
+            $uploadPath = ROOTPATH . 'public/uploads/reviews';
+
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0777, true);
+            }
+
+            $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            $maxSize = 2048;
+            $maxImages = 5;
+
+            $validFiles = array_filter($files, function ($file) {
+                return $file->isValid() && !$file->hasMoved();
+            });
+
+            $totalImages = count($existingImages) + count($validFiles);
+
+            if ($totalImages > $maxImages) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Total gambar tidak boleh lebih dari 5');
+            }
+
+            foreach ($validFiles as $file) {
+                if (!in_array($file->getMimeType(), $allowedTypes)) {
+                    continue;
+                }
+
+                if ($file->getSize() > ($maxSize * 1024)) {
+                    continue;
+                }
+
+                $newName = 'review_' . uniqid() . '_' . time() . '.' . $file->getExtension();
+
+                if ($file->move($uploadPath, $newName)) {
+                    $uploadedImages[] = $newName;
+                }
+            }
+        }
+
         $data = [
             'rating' => $this->request->getPost('rating'),
-            'comment' => $this->request->getPost('comment')
+            'comment' => $this->request->getPost('comment'),
+            'review_images' => !empty($uploadedImages) ? json_encode($uploadedImages) : null
         ];
 
         if ($this->reviewModel->update($reviewId, $data)) {
-            // HAPUS auto-update rating untuk menghindari error
-            // Data rating akan dihitung real-time di Home controller
-
             return redirect()->to('/order/detail/' . $review['order_id'])
                 ->with('success', 'Review berhasil diperbarui');
         } else {
@@ -214,14 +310,63 @@ class Review extends BaseController
             return redirect()->to('/orders')->with('error', 'Review tidak ditemukan');
         }
 
-        if ($this->reviewModel->delete($reviewId)) {
-            // HAPUS auto-update rating untuk menghindari error
-            // Data rating akan dihitung real-time di Home controller
+        // Hapus gambar review jika ada
+        if (!empty($review['review_images'])) {
+            $images = json_decode($review['review_images'], true);
+            foreach ($images as $image) {
+                $imagePath = ROOTPATH . 'public/uploads/reviews/' . $image;
+                if (file_exists($imagePath)) {
+                    unlink($imagePath);
+                }
+            }
+        }
 
+        if ($this->reviewModel->delete($reviewId)) {
             return redirect()->to('/order/detail/' . $review['order_id'])
                 ->with('success', 'Review berhasil dihapus');
         } else {
             return redirect()->back()->with('error', 'Gagal menghapus review');
         }
+    }
+
+    // Hapus satu gambar dari review
+    public function deleteImage($reviewId, $imageIndex)
+    {
+        if (!session()->get('user_id')) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        $userId = session()->get('user_id');
+        $review = $this->reviewModel->find($reviewId);
+
+        if (!$review || $review['user_id'] != $userId) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Review not found']);
+        }
+
+        if (empty($review['review_images'])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'No images found']);
+        }
+
+        $images = json_decode($review['review_images'], true);
+
+        if (!isset($images[$imageIndex])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Image not found']);
+        }
+
+        // Hapus file gambar
+        $imagePath = ROOTPATH . 'public/uploads/reviews/' . $images[$imageIndex];
+        if (file_exists($imagePath)) {
+            unlink($imagePath);
+        }
+
+        // Hapus dari array
+        unset($images[$imageIndex]);
+        $images = array_values($images); // Reindex array
+
+        // Update database
+        $updatedImages = !empty($images) ? json_encode($images) : null;
+        $this->reviewModel->update($reviewId, ['review_images' => $updatedImages]);
+
+        return $this->response->setJSON(['success' => true, 'message' => 'Image deleted']);
     }
 }

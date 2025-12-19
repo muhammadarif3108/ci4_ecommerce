@@ -26,6 +26,7 @@
         color: #ffc107;
     }
 
+    .existing-images-container,
     .image-preview-container {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -33,7 +34,8 @@
         margin-top: 15px;
     }
 
-    .image-preview-item {
+    .image-preview-item,
+    .existing-image-item {
         position: relative;
         border: 2px solid #ddd;
         border-radius: 8px;
@@ -41,7 +43,8 @@
         aspect-ratio: 1;
     }
 
-    .image-preview-item img {
+    .image-preview-item img,
+    .existing-image-item img {
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -64,6 +67,7 @@
         font-size: 16px;
         line-height: 1;
         transition: all 0.3s;
+        z-index: 10;
     }
 
     .remove-image-btn:hover {
@@ -96,9 +100,9 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-warning text-dark">
                     <h4 class="mb-0">
-                        <i class="bi bi-star-fill me-2"></i>Beri Review Produk
+                        <i class="bi bi-pencil-square me-2"></i>Edit Review
                     </h4>
                 </div>
                 <div class="card-body">
@@ -138,7 +142,6 @@
                             <div class="col">
                                 <h5 class="mb-1"><?= esc($product['product_name']) ?></h5>
                                 <p class="text-muted mb-0">
-                                    Order #<?= $order['id'] ?> •
                                     Rp <?= number_format($product['price'], 0, ',', '.') ?>
                                 </p>
                             </div>
@@ -146,55 +149,73 @@
                     </div>
 
                     <!-- Form Review -->
-                    <form action="<?= base_url('review/store') ?>" method="post" enctype="multipart/form-data" id="reviewForm">
+                    <form action="<?= base_url('review/update/' . $review['id']) ?>" method="post" enctype="multipart/form-data">
                         <?= csrf_field() ?>
-                        <input type="hidden" name="product_id" value="<?= $product['product_id'] ?>">
-                        <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
 
                         <!-- Rating Bintang -->
                         <div class="mb-4 text-center">
                             <label class="form-label fw-bold d-block mb-3">
-                                Berikan Rating Anda <span class="text-danger">*</span>
+                                Rating <span class="text-danger">*</span>
                             </label>
                             <div class="star-rating">
-                                <input type="radio" id="star5" name="rating" value="5" required>
-                                <label for="star5" title="5 bintang">★</label>
-
-                                <input type="radio" id="star4" name="rating" value="4">
-                                <label for="star4" title="4 bintang">★</label>
-
-                                <input type="radio" id="star3" name="rating" value="3">
-                                <label for="star3" title="3 bintang">★</label>
-
-                                <input type="radio" id="star2" name="rating" value="2">
-                                <label for="star2" title="2 bintang">★</label>
-
-                                <input type="radio" id="star1" name="rating" value="1">
-                                <label for="star1" title="1 bintang">★</label>
+                                <?php for ($i = 5; $i >= 1; $i--): ?>
+                                    <input type="radio" id="star<?= $i ?>" name="rating" value="<?= $i ?>"
+                                        <?= $review['rating'] == $i ? 'checked' : '' ?> required>
+                                    <label for="star<?= $i ?>" title="<?= $i ?> bintang">★</label>
+                                <?php endfor; ?>
                             </div>
-                            <small class="text-muted d-block mt-2">
-                                Klik bintang untuk memberikan rating
-                            </small>
                         </div>
 
                         <!-- Komentar -->
                         <div class="mb-4">
                             <label for="comment" class="form-label fw-bold">
-                                <i class="bi bi-chat-left-text me-1"></i>Tulis Review Anda (Opsional)
+                                <i class="bi bi-chat-left-text me-1"></i>Review Anda
                             </label>
                             <textarea class="form-control"
                                 id="comment"
                                 name="comment"
                                 rows="5"
                                 maxlength="1000"
-                                placeholder="Bagikan pengalaman Anda dengan produk ini..."><?= old('comment') ?></textarea>
+                                placeholder="Bagikan pengalaman Anda..."><?= esc($review['comment']) ?></textarea>
                             <small class="text-muted">Maksimal 1000 karakter</small>
                         </div>
 
-                        <!-- Upload Foto Produk -->
+                        <!-- Existing Images -->
+                        <?php
+                        $existingImages = !empty($review['review_images']) ? json_decode($review['review_images'], true) : [];
+                        if (!empty($existingImages)):
+                        ?>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-images me-1"></i>Foto Saat Ini
+                                </label>
+                                <div class="existing-images-container" id="existingImagesContainer">
+                                    <?php foreach ($existingImages as $index => $image): ?>
+                                        <?php
+                                        $imagePath = FCPATH . 'uploads/reviews/' . $image;
+                                        if (file_exists($imagePath)):
+                                        ?>
+                                            <div class="existing-image-item" data-index="<?= $index ?>">
+                                                <img src="<?= base_url('uploads/reviews/' . $image) ?>"
+                                                    alt="Review Image <?= $index + 1 ?>">
+                                                <button type="button"
+                                                    class="remove-image-btn remove-existing-btn"
+                                                    data-review-id="<?= $review['id'] ?>"
+                                                    data-image-index="<?= $index ?>"
+                                                    title="Hapus gambar">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </div>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Upload New Images -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">
-                                <i class="bi bi-images me-1"></i>Foto Produk (Opsional)
+                                <i class="bi bi-plus-circle me-1"></i>Tambah Foto Baru (Opsional)
                             </label>
 
                             <div class="upload-area" id="uploadArea">
@@ -206,21 +227,21 @@
                                     style="display: none;">
                                 <i class="bi bi-cloud-upload fs-1 text-muted d-block mb-2"></i>
                                 <p class="mb-1">Klik atau drag & drop untuk upload foto</p>
-                                <small class="text-muted">Maksimal 5 foto, masing-masing max 2MB (JPG, PNG, GIF)</small>
+                                <small class="text-muted">Maksimal <?= 5 - count($existingImages) ?> foto lagi (masing-masing max 2MB)</small>
                             </div>
 
-                            <!-- Preview Images -->
+                            <!-- Preview New Images -->
                             <div id="imagePreviewContainer" class="image-preview-container"></div>
                         </div>
 
                         <!-- Tombol -->
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="<?= base_url('order/detail/' . $order['id']) ?>"
+                            <a href="<?= base_url('order/detail/' . $review['order_id']) ?>"
                                 class="btn btn-outline-secondary">
                                 <i class="bi bi-x-circle me-1"></i>Batal
                             </a>
                             <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-send me-1"></i>Kirim Review
+                                <i class="bi bi-check-circle me-1"></i>Simpan Perubahan
                             </button>
                         </div>
                     </form>
@@ -235,7 +256,10 @@
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('review_images');
         const previewContainer = document.getElementById('imagePreviewContainer');
+        const existingImagesContainer = document.getElementById('existingImagesContainer');
         let selectedFiles = [];
+        let existingImagesCount = <?= count($existingImages) ?>;
+        const maxImages = 5;
 
         // Click to upload
         uploadArea.addEventListener('click', () => fileInput.click());
@@ -264,16 +288,15 @@
         });
 
         function handleFiles(files) {
-            // Filter only image files
             const imageFiles = files.filter(file => file.type.startsWith('image/'));
 
-            // Check total count
-            if (selectedFiles.length + imageFiles.length > 5) {
-                alert('Maksimal 5 foto');
+            const availableSlots = maxImages - existingImagesCount - selectedFiles.length;
+
+            if (imageFiles.length > availableSlots) {
+                alert(`Maksimal ${availableSlots} foto lagi`);
                 return;
             }
 
-            // Check file size
             const validFiles = imageFiles.filter(file => {
                 if (file.size > 2 * 1024 * 1024) {
                     alert(`File ${file.name} terlalu besar (max 2MB)`);
@@ -315,7 +338,7 @@
             });
         }
 
-        // Remove image
+        // Remove new uploaded image
         previewContainer.addEventListener('click', (e) => {
             const btn = e.target.closest('.remove-image-btn');
             if (btn) {
@@ -325,6 +348,45 @@
                 displayPreviews();
             }
         });
+
+        // Remove existing image
+        if (existingImagesContainer) {
+            existingImagesContainer.addEventListener('click', async (e) => {
+                const btn = e.target.closest('.remove-existing-btn');
+                if (btn) {
+                    if (!confirm('Hapus gambar ini?')) return;
+
+                    const reviewId = btn.dataset.reviewId;
+                    const imageIndex = btn.dataset.imageIndex;
+
+                    try {
+                        const response = await fetch(
+                            `<?= base_url('review/delete-image/') ?>${reviewId}/${imageIndex}`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            }
+                        );
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            btn.closest('.existing-image-item').remove();
+                            existingImagesCount--;
+                            // Update upload hint
+                            uploadArea.querySelector('small').textContent =
+                                `Maksimal ${maxImages - existingImagesCount} foto lagi (masing-masing max 2MB)`;
+                        } else {
+                            alert(result.message || 'Gagal menghapus gambar');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan saat menghapus gambar');
+                    }
+                }
+            });
+        }
     });
 </script>
 

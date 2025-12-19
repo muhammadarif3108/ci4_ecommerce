@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;  // ← Pastikan ini 'Models' dengan huruf 's'
+namespace App\Models;
 
 use CodeIgniter\Model;
 
@@ -8,7 +8,7 @@ class ReviewModel extends Model
 {
     protected $table = 'product_reviews';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['product_id', 'user_id', 'order_id', 'rating', 'comment'];
+    protected $allowedFields = ['product_id', 'user_id', 'order_id', 'rating', 'comment', 'review_images'];
     protected $useTimestamps = true;
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';

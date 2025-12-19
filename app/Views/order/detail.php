@@ -123,17 +123,27 @@
                             <div class="col-md-3 text-end">
                                 <?php if ($order['status'] == 'delivered'): ?>
                                     <?php
-                                    $hasReviewed = $reviewModel->hasReviewed(
+                                    $userReview = $reviewModel->getUserReview(
                                         $item['product_id'],
                                         session()->get('user_id'),
                                         $order['id']
                                     );
                                     ?>
-                                    <?php if ($hasReviewed): ?>
-                                        <span class="badge bg-success">
-                                            <i class="bi bi-check-circle me-1"></i>Sudah direview
-                                        </span>
+                                    <?php if ($userReview): ?>
+                                        <!-- Sudah ada review - tampilkan tombol Edit & Delete -->
+                                        <div class="d-grid gap-2">
+                                            <a href="<?= base_url('review/edit/' . $userReview['id']) ?>"
+                                                class="btn btn-sm btn-warning">
+                                                <i class="bi bi-pencil me-1"></i>Edit Review
+                                            </a>
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="confirmDeleteReview(<?= $userReview['id'] ?>)">
+                                                <i class="bi bi-trash me-1"></i>Hapus Review
+                                            </button>
+                                        </div>
                                     <?php else: ?>
+                                        <!-- Belum ada review - tampilkan tombol Beri Review -->
                                         <a href="<?= base_url('review/create/' . $order['id'] . '/' . $item['product_id']) ?>"
                                             class="btn btn-sm btn-outline-warning">
                                             <i class="bi bi-star me-1"></i>Beri Review
@@ -204,6 +214,35 @@
     </div>
 </div>
 
+<!-- Delete Review Modal -->
+<div class="modal fade" id="deleteReviewModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Hapus Review
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Apakah Anda yakin ingin menghapus review ini?</p>
+                <p class="text-muted small mb-0">Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Batal
+                </button>
+                <form id="deleteReviewForm" method="post" style="display: inline;">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Ya, Hapus
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     .timeline {
         position: relative;
@@ -251,5 +290,15 @@
         color: var(--accent-color);
     }
 </style>
+
+<script>
+    function confirmDeleteReview(reviewId) {
+        const deleteForm = document.getElementById('deleteReviewForm');
+        deleteForm.action = '<?= base_url('review/delete/') ?>' + reviewId;
+
+        const modal = new bootstrap.Modal(document.getElementById('deleteReviewModal'));
+        modal.show();
+    }
+</script>
 
 <?= $this->endSection() ?>
