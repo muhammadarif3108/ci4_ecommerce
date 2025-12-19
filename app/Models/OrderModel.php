@@ -8,18 +8,27 @@ class OrderModel extends Model
 {
     protected $table = 'orders';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['user_id', 'total_amount', 'status', 'shipping_address'];
+    protected $allowedFields = ['user_id', 'total_amount', 'status', 'shipping_address', 'payment_method', 'payment_proof', 'payment_status', 'virtual_account'];
     protected $useTimestamps = false;
 
-    public function createOrder($userId, $totalAmount, $shippingAddress, $cartItems)
+    public function createOrder($userId, $totalAmount, $shippingAddress, $cartItems, $paymentMethod = 'transfer')
     {
         $this->db->transStart();
+
+        // Generate Virtual Account jika Transfer Bank
+        $virtualAccount = null;
+        if ($paymentMethod === 'transfer') {
+            $virtualAccount = $this->generateVirtualAccount($userId);
+        }
 
         $orderData = [
             'user_id' => $userId,
             'total_amount' => $totalAmount,
             'status' => 'pending',
             'shipping_address' => $shippingAddress,
+            'payment_method' => $paymentMethod,
+            'payment_status' => 'unpaid',
+            'virtual_account' => $virtualAccount,
             'created_at' => date('Y-m-d H:i:s')
         ];
 
@@ -51,6 +60,28 @@ class OrderModel extends Model
         }
 
         return $orderId;
+    }
+
+    /**
+     * Generate Virtual Account Number
+     * Format: 8808 + User ID (4 digit) + Random (4 digit)
+     */
+    private function generateVirtualAccount($userId)
+    {
+        $userIdPadded = str_pad($userId, 4, '0', STR_PAD_LEFT);
+        $random = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
+        return '8808' . $userIdPadded . $random;
+    }
+
+    /**
+     * Update payment proof
+     */
+    public function updatePaymentProof($orderId, $fileName)
+    {
+        return $this->update($orderId, [
+            'payment_proof' => $fileName,
+            'payment_status' => 'pending' // Menunggu verifikasi admin
+        ]);
     }
 
     public function getUserOrders($userId)
@@ -99,7 +130,6 @@ class OrderModel extends Model
             ->findAll();
     }
 
-    // Di OrderModel.php, tambahkan method ini
     public function updateProductSold($orderId)
     {
         $orderItemModel = new OrderItemModel();

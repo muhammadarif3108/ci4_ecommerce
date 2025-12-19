@@ -26,7 +26,7 @@ class Checkout extends BaseController
         return view('checkout', $data);
     }
 
-    public function process()
+public function process()
     {
         if (!session()->has('user_id')) {
             return redirect()->to(base_url('login'))->with('error', 'Please login to checkout');
@@ -39,6 +39,7 @@ class Checkout extends BaseController
         }
 
         $shippingAddress = $this->request->getPost('shipping_address');
+        $paymentMethod = $this->request->getPost('payment_method');
         $totalAmount = 0;
 
         foreach ($cart as $item) {
@@ -48,14 +49,19 @@ class Checkout extends BaseController
         $orderModel = new OrderModel();
         $orderId = $orderModel->createOrder(
             session()->get('user_id'),
-            $totalAmount, // +20000 untuk shipping
+            $totalAmount,
             $shippingAddress,
-            $cart
+            $cart,
+            $paymentMethod
         );
 
         session()->remove('cart');
 
-        // Menggunakan base_url()
-        return redirect()->to(base_url('order/success/' . $orderId))->with('success', 'Order placed successfully');
+        // Redirect berdasarkan metode pembayaran
+        if ($paymentMethod === 'transfer') {
+            return redirect()->to(base_url('payment/' . $orderId))->with('success', 'Order created. Please complete payment.');
+        } else {
+            return redirect()->to(base_url('order/success/' . $orderId))->with('success', 'Order placed successfully');
+        }
     }
 }

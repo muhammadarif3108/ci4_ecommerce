@@ -1,4 +1,3 @@
-<!-- app/Config/Routes.php -->
 <?php
 
 use CodeIgniter\Router\RouteCollection;
@@ -25,12 +24,16 @@ $routes->get('checkout', 'Checkout::index');
 $routes->post('checkout/process', 'Checkout::process');
 $routes->get('order/success/(:num)', 'Order::success/$1');
 
+// Payment Routes
+$routes->get('payment/(:num)', 'Payment::index/$1');
+$routes->post('payment/upload/(:num)', 'Payment::upload/$1');
+
 // Order Routes
 $routes->get('order/success/(:num)', 'Order::success/$1');
 $routes->get('orders', 'Order::index');
 $routes->get('order/detail/(:num)', 'Order::detail/$1');
 
-// Review Routes (setelah Order Routes)
+// Review Routes
 $routes->get('review/create/(:num)/(:num)', 'Review::create/$1/$2');
 $routes->post('review/store', 'Review::store');
 $routes->get('review/edit/(:num)', 'Review::edit/$1');
@@ -73,6 +76,10 @@ $routes->group('admin', function ($routes) {
     $routes->get('orders', 'Admin\Order::index');
     $routes->get('orders/detail/(:num)', 'Admin\Order::detail/$1');
     $routes->post('orders/update-status/(:num)', 'Admin\Order::updateStatus/$1');
+
+    // Payment Verification Routes
+    $routes->get('orders/verify-payment/(:num)', 'Admin\Order::verifyPayment/$1');
+    $routes->get('orders/reject-payment/(:num)', 'Admin\Order::rejectPayment/$1');
 
     // Categories
     $routes->get('categories', 'Admin\Category::index');

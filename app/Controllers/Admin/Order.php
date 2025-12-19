@@ -1,5 +1,5 @@
 <?php
-// app/Controllers/Admin/Order.php
+
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
@@ -75,5 +75,68 @@ class Order extends BaseController
         }
 
         return redirect()->back()->with('error', 'Failed to update order status');
+    }
+
+    public function verifyPayment($id)
+    {
+        if (!session()->get('is_admin')) {
+            return redirect()->to('/admin/login');
+        }
+
+        $order = $this->orderModel->find($id);
+
+        if (!$order) {
+            return redirect()->to('/admin/orders')->with('error', 'Order not found');
+        }
+
+        if (empty($order['payment_proof'])) {
+            return redirect()->back()->with('error', 'No payment proof uploaded yet');
+        }
+
+        if ($order['payment_status'] === 'verified') {
+            return redirect()->back()->with('info', 'Payment already verified');
+        }
+
+        $updated = $this->orderModel->update($id, [
+            'payment_status' => 'verified',
+            'status' => 'processing'
+        ]);
+
+        if ($updated) {
+            return redirect()->back()->with('success', 'Payment verified successfully. Order status changed to Processing.');
+        }
+
+        return redirect()->back()->with('error', 'Failed to verify payment');
+    }
+
+    public function rejectPayment($id)
+    {
+        if (!session()->get('is_admin')) {
+            return redirect()->to('/admin/login');
+        }
+
+        $order = $this->orderModel->find($id);
+
+        if (!$order) {
+            return redirect()->to('/admin/orders')->with('error', 'Order not found');
+        }
+
+        if (!empty($order['payment_proof'])) {
+            $filePath = ROOTPATH . 'public/uploads/payments/' . $order['payment_proof'];
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        }
+
+        $updated = $this->orderModel->update($id, [
+            'payment_status' => 'unpaid',
+            'payment_proof' => null
+        ]);
+
+        if ($updated) {
+            return redirect()->back()->with('success', 'Payment rejected. Customer needs to reupload payment proof.');
+        }
+
+        return redirect()->back()->with('error', 'Failed to reject payment');
     }
 }
