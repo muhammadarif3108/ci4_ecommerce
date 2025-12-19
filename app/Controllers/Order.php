@@ -81,4 +81,38 @@ class Order extends BaseController
 
         return view('order/detail', $data);
     }
+
+    public function confirmDelivery($orderId)
+    {
+        if (!session()->has('user_id')) {
+            return redirect()->to('/login');
+        }
+
+        $orderModel = new OrderModel();
+        $order = $orderModel->where('id', $orderId)
+            ->where('user_id', session()->get('user_id'))
+            ->first();
+
+        if (!$order) {
+            return redirect()->to('/orders')->with('error', 'Order not found');
+        }
+
+        // Only allow confirmation if status is 'shipped'
+        if ($order['status'] !== 'shipped') {
+            return redirect()->back()->with('error', 'Order cannot be confirmed at this stage');
+        }
+
+        // Update status to 'delivered'
+        $updated = $orderModel->update($orderId, [
+            'status' => 'delivered',
+            'delivered_at' => date('Y-m-d H:i:s')
+        ]);
+
+        if ($updated) {
+            return redirect()->to('/order/detail/' . $orderId)
+                ->with('success', 'Terima kasih! Pesanan telah dikonfirmasi diterima');
+        }
+
+        return redirect()->back()->with('error', 'Failed to confirm delivery');
+    }
 }

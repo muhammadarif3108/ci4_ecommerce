@@ -33,6 +33,9 @@ $routes->get('order/success/(:num)', 'Order::success/$1');
 $routes->get('orders', 'Order::index');
 $routes->get('order/detail/(:num)', 'Order::detail/$1');
 
+// Customer Confirm Delivery Route
+$routes->post('order/confirm-delivery/(:num)', 'Order::confirmDelivery/$1');
+
 // Review Routes
 $routes->get('review/create/(:num)/(:num)', 'Review::create/$1/$2');
 $routes->post('review/store', 'Review::store');

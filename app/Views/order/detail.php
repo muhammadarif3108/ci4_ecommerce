@@ -9,14 +9,14 @@
 
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success alert-dismissible fade show">
-            <?= session()->getFlashdata('success') ?>
+            <i class="bi bi-check-circle me-2"></i><?= session()->getFlashdata('success') ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     <?php endif; ?>
 
     <?php if (session()->getFlashdata('error')): ?>
         <div class="alert alert-danger alert-dismissible fade show">
-            <?= session()->getFlashdata('error') ?>
+            <i class="bi bi-exclamation-triangle me-2"></i><?= session()->getFlashdata('error') ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     <?php endif; ?>
@@ -63,6 +63,27 @@
                             <p class="mb-0"><?= nl2br(esc($order['shipping_address'])) ?></p>
                         </div>
                     </div>
+
+                    <!-- Tombol Konfirmasi Diterima - Hanya muncul jika status "shipped" -->
+                    <?php if ($order['status'] === 'shipped'): ?>
+                        <div class="alert alert-info mt-3 mb-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-truck me-2"></i>
+                                    <strong>Pesanan sedang dalam perjalanan</strong>
+                                    <p class="mb-0 mt-2 small">Sudah menerima pesanan? Klik tombol <b>Pesanan Diterima</b></p>
+                                </div>
+                                <form action="<?= base_url('order/confirm-delivery/' . $order['id']) ?>"
+                                    method="post"
+                                    onsubmit="return confirm('Apakah Anda yakin sudah menerima pesanan ini?')">
+                                    <?= csrf_field() ?>
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        <i class="bi bi-check-circle me-1"></i>Pesanan Diterima
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -150,8 +171,85 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Status Timeline -->
+            <div class="card mt-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bi bi-clock-history me-2"></i>Status Pesanan
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item <?= $order['status'] == 'pending' || $order['status'] == 'processing' || $order['status'] == 'shipped' || $order['status'] == 'delivered' ? 'active' : '' ?>">
+                            <i class="bi bi-circle-fill"></i>
+                            <span>Pesanan Dibuat</span>
+                        </div>
+                        <div class="timeline-item <?= $order['status'] == 'processing' || $order['status'] == 'shipped' || $order['status'] == 'delivered' ? 'active' : '' ?>">
+                            <i class="bi bi-circle-fill"></i>
+                            <span>Sedang Dikemas</span>
+                        </div>
+                        <div class="timeline-item <?= $order['status'] == 'shipped' || $order['status'] == 'delivered' ? 'active' : '' ?>">
+                            <i class="bi bi-circle-fill"></i>
+                            <span>Sedang Dikirim</span>
+                        </div>
+                        <div class="timeline-item <?= $order['status'] == 'delivered' ? 'active' : '' ?>">
+                            <i class="bi bi-circle-fill"></i>
+                            <span>Pesanan Diterima</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-bottom: 20px;
+        color: #999;
+    }
+
+    .timeline-item:before {
+        content: '';
+        position: absolute;
+        left: -22px;
+        top: 8px;
+        bottom: -12px;
+        width: 2px;
+        background: #ddd;
+    }
+
+    .timeline-item:last-child:before {
+        display: none;
+    }
+
+    .timeline-item i {
+        position: absolute;
+        left: -28px;
+        top: 0;
+        font-size: 12px;
+        color: #ddd;
+    }
+
+    .timeline-item.active {
+        color: #333;
+        font-weight: 500;
+    }
+
+    .timeline-item.active:before {
+        background: var(--accent-color);
+    }
+
+    .timeline-item.active i {
+        color: var(--accent-color);
+    }
+</style>
 
 <?= $this->endSection() ?>

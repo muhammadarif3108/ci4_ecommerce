@@ -50,7 +50,7 @@
                         <select class="form-select" name="payment_method">
                             <option value="transfer">Transfer Bank</option>
                             <option value="cod">COD (Bayar di Tempat)</option>
-                            <option value="ewallet">E-Wallet (GoPay/OVO/Dana)</option>
+
                         </select>
                     </div>
                     <div class="d-grid">
